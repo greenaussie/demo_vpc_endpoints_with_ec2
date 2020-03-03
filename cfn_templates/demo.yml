@@ -6,13 +6,25 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /demo/vpc_endpoints_with_ec2/resolver_vpc
   ResolverSubnetA:
-    Description: A subenet which can reach your resolver service  for forwarded requests (min of two of these needed).
+    Description: A subenet which can reach your resolver service for forwarded requests (min of two of these needed).
     Type: AWS::SSM::Parameter::Value<String>
     Default: /demo/vpc_endpoints_with_ec2/resolver_subnet_a
   ResolverSubnetB:
-    Description: A subenet which can reach your resolver service  for forwarded requests (min of two of these needed).
+    Description: A subenet which can reach your resolver service for forwarded requests (min of two of these needed).
     Type: AWS::SSM::Parameter::Value<String>
     Default: /demo/vpc_endpoints_with_ec2/resolver_subnet_b
+  TargetIpAddress1:
+    Description: IP address of resolver for forwarded requests (e.g. "10.0.0.1" )
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /demo/vpc_endpoints_with_ec2/rule_target_ip_address_1
+  TargetIpAddress2:
+    Description: IP address of resolver for forwarded requests (e.g. "10.0.0.2" )
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /demo/vpc_endpoints_with_ec2/rule_target_ip_address_1
+  ForwarderDomainName:
+    Description: Base domain name to be forwarded.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /demo/vpc_endpoints_with_ec2/rule_forward_domain_name
 Resources:
   Vpc:
     Type: AWS::EC2::VPC
@@ -147,6 +159,22 @@ Resources:
         - SubnetId: !Ref ResolverSubnetB
       SecurityGroupIds: 
         - !Ref OutboundResolverSecurityGroup
+  OutboundResolverRule:
+    Type: AWS::Route53Resolver::ResolverRule
+    Properties:
+      DomainName: !Ref ForwarderDomainName
+      ResolverEndpointId: !GetAtt OuboundResolver.ResolverEndpointId
+      RuleType: FORWARD
+      TargetIps:
+        - Ip: !Ref TargetIpAddress1
+          Port: "53"
+        - Ip: !Ref TargetIpAddress2
+          Port: "53"
+  OutboundResolverRuleAssociation:
+    Type: AWS::Route53Resolver::ResolverRuleAssociation
+    Properties:
+      ResolverRuleId: !GetAtt OutboundResolverRule.ResolverRuleId
+      VPCId: !Ref Vpc
   InstanceRole:
     Type: AWS::IAM::Role
     Properties:

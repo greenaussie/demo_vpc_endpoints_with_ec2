@@ -16,10 +16,16 @@ Create SSM parameters providing the template with VPC and two subnets which can 
 aws ssm put-parameter --name /demo/vpc_endpoints_with_ec2/resolver_subnet_a --value subnet-00000000 --type String
 aws ssm put-parameter --name /demo/vpc_endpoints_with_ec2/resolver_subnet_b --value subnet-22222222 --type String
 aws ssm put-parameter --name /demo/vpc_endpoints_with_ec2/resolver_vpc --value vpc-55555555 --type String
+aws ssm put-parameter --name /demo/vpc_endpoints_with_ec2/rule_target_ip_address_1 --value "10.0.0.1" --type String
+aws ssm put-parameter --name /demo/vpc_endpoints_with_ec2/rule_target_ip_address_2 --value "10.0.0.2" --type String
+aws ssm put-parameter --name /demo/vpc_endpoints_with_ec2/rule_forward_domain_name --value "mycompany.onprem" --type String 
 
 aws ssm get-parameter --name /demo/vpc_endpoints_with_ec2/resolver_subnet_a
 aws ssm get-parameter --name /demo/vpc_endpoints_with_ec2/resolver_subnet_b
 aws ssm get-parameter --name /demo/vpc_endpoints_with_ec2/resolver_vpc
+aws ssm get-parameter --name /demo/vpc_endpoints_with_ec2/rule_target_ip_address_1
+aws ssm get-parameter --name /demo/vpc_endpoints_with_ec2/rule_target_ip_address_2
+aws ssm get-parameter --name /demo/vpc_endpoints_with_ec2/rule_forward_domain_name
 ```
 
 Deploy script uses Docker, after you have exported to your environment, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION and perhaps AWS_SESSION_TOKEN (last on only if you have assumed a role).
