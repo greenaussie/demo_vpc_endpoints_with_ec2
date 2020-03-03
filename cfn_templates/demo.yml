@@ -147,8 +147,22 @@ Resources:
     Properties:
       GroupDescription: Route53 outbound resolver endpoint security group
       SecurityGroupEgress:
-        - CidrIp: 192.168.0.0/24
-          IpProtocol: "-1"
+        - CidrIp: !Join [ "", [ !Ref TargetIpAddress1, "/32" ]]
+          IpProtocol: "udp"
+          FromPort: "53"
+          ToPort: "53"
+        - CidrIp: !Join [ "", [ !Ref TargetIpAddress2, "/32" ]]
+          IpProtocol: "udp"
+          FromPort: "53"
+          ToPort: "53"
+        - CidrIp: !Join [ "", [ !Ref TargetIpAddress1, "/32" ]]
+          IpProtocol: "udp"
+          FromPort: "53"
+          ToPort: "53"
+        - CidrIp: !Join [ "", [ !Ref TargetIpAddress2, "/32" ]]
+          IpProtocol: "udp"
+          FromPort: "53"
+          ToPort: "53"
       VpcId: !Ref ResolverVpc
   OuboundResolver:
     Type: AWS::Route53Resolver::ResolverEndpoint
