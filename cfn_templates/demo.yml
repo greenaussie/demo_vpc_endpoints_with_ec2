@@ -132,3 +132,4 @@ Resources:
       IamInstanceProfile: !Ref InstanceProfile
       InstanceType: t3.nano
       ImageId: ami-023c6e46cf5312347
+      SubnetId: !Ref Subnet
