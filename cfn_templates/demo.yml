@@ -130,8 +130,8 @@ Resources:
     Properties: 
       Direction: OUTBOUND
       IpAddresses: 
-        - !Ref SubnetA
-        - !Ref SubnetB
+        - SubnetId: !Ref SubnetA
+        - SubnetId: !Ref SubnetB
       SecurityGroupIds: 
         - !Ref OutboundResolverSecurityGroup
   InstanceRole:
