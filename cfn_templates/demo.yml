@@ -39,17 +39,23 @@ Resources:
               - "sts:AssumeRole"
       Path: /
       ManagedPolicyArns: ["arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"]
-  CloudwatchLogGroupProd:
+  CloudwatchLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Delete
     Properties:
-      LogGroupName: demo-vpc-flow-logs
-  Subnet:
+      RetentionInDays: "1"
+  SubnetA:
     Type: "AWS::EC2::Subnet"
     Properties:
       AvailabilityZone: ap-southeast-2a
-      CidrBlock: 192.168.0.0/24
+      CidrBlock: 192.168.0.0/25
       VpcId: !Ref Vpc
+  SubnetB:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: ap-southeast-2a
+      CidrBlock: 192.168.0.128/25
+      VpcId: !Ref Vpc    
   InterfaceVpcEndpointSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
@@ -71,7 +77,8 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2" ] ]
       SubnetIds:
-        - !Ref Subnet
+        - !Ref SubnetA
+        - !Ref SubnetB
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
   Ec2MessagesVpcEndpoint:
@@ -82,7 +89,8 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2messages" ] ]
       SubnetIds:
-        - !Ref Subnet
+        - !Ref SubnetA
+        - !Ref SubnetB
       VpcEndpointType: Interface
       VpcId: !Ref Vpc    
   SsmVpcEndpoint:
@@ -93,7 +101,8 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssm" ] ]
       SubnetIds:
-        - !Ref Subnet
+        - !Ref SubnetA
+        - !Ref SubnetB
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
   SsmMessagesVpcEndpoint:
@@ -104,9 +113,27 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssmmessages" ] ]
       SubnetIds:
-        - !Ref Subnet
+        - !Ref SubnetA
+        - !Ref SubnetB
       VpcEndpointType: Interface
-      VpcId: !Ref Vpc    
+      VpcId: !Ref Vpc
+  OutboundResolverSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Route53 outbound resolver endpoint security group
+      SecurityGroupEgress:
+        - CidrIp: 192.168.0.0/24
+          IpProtocol: "-1"
+      VpcId: !Ref Vpc
+  OuboundResolver:
+    Type: AWS::Route53Resolver::ResolverEndpoint
+    Properties: 
+      Direction: OUTBOUND
+      IpAddresses: 
+        - !Ref SubnetA
+        - !Ref SubnetB
+      SecurityGroupIds: 
+        - !Ref OutboundResolverSecurityGroup
   InstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -132,4 +159,4 @@ Resources:
       IamInstanceProfile: !Ref InstanceProfile
       InstanceType: t3.nano
       ImageId: ami-023c6e46cf5312347
-      SubnetId: !Ref Subnet
+      SubnetId: !Ref SubnetA
