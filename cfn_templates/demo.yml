@@ -75,12 +75,6 @@ Resources:
       AvailabilityZone: ap-southeast-2a
       CidrBlock: 192.168.0.0/25
       VpcId: !Ref Vpc
-  SubnetB:
-    Type: "AWS::EC2::Subnet"
-    Properties:
-      AvailabilityZone: ap-southeast-2b
-      CidrBlock: 192.168.0.128/25
-      VpcId: !Ref Vpc    
   InterfaceVpcEndpointSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
@@ -103,7 +97,6 @@ Resources:
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2" ] ]
       SubnetIds:
         - !Ref SubnetA
-        - !Ref SubnetB
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
   Ec2MessagesVpcEndpoint:
@@ -115,7 +108,6 @@ Resources:
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2messages" ] ]
       SubnetIds:
         - !Ref SubnetA
-        - !Ref SubnetB
       VpcEndpointType: Interface
       VpcId: !Ref Vpc    
   SsmVpcEndpoint:
@@ -127,7 +119,6 @@ Resources:
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssm" ] ]
       SubnetIds:
         - !Ref SubnetA
-        - !Ref SubnetB
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
   SsmMessagesVpcEndpoint:
@@ -139,7 +130,6 @@ Resources:
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssmmessages" ] ]
       SubnetIds:
         - !Ref SubnetA
-        - !Ref SubnetB
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
   OutboundResolverSecurityGroup:
