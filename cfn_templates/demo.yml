@@ -53,7 +53,7 @@ Resources:
   SubnetB:
     Type: "AWS::EC2::Subnet"
     Properties:
-      AvailabilityZone: ap-southeast-2a
+      AvailabilityZone: ap-southeast-2b
       CidrBlock: 192.168.0.128/25
       VpcId: !Ref Vpc    
   InterfaceVpcEndpointSecurityGroup:
