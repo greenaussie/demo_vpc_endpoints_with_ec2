@@ -1,5 +1,18 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Demo
+Parameters:
+  ResolverVpc:
+    Description: VPC containing subnets which will be used to reach tor resolver for forwarded requests.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /demo/vpc_endpoints_with_ec2/resolver_vpc
+  ResolverSubnetA:
+    Description: A subenet which can reach your resolver service  for forwarded requests (min of two of these needed).
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /demo/vpc_endpoints_with_ec2/resolver_subnet_a
+  ResolverSubnetB:
+    Description: A subenet which can reach your resolver service  for forwarded requests (min of two of these needed).
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /demo/vpc_endpoints_with_ec2/resolver_subnet_b
 Resources:
   Vpc:
     Type: AWS::EC2::VPC
@@ -124,14 +137,14 @@ Resources:
       SecurityGroupEgress:
         - CidrIp: 192.168.0.0/24
           IpProtocol: "-1"
-      VpcId: !Ref Vpc
+      VpcId: !Ref ResolverVpc
   OuboundResolver:
     Type: AWS::Route53Resolver::ResolverEndpoint
     Properties: 
       Direction: OUTBOUND
       IpAddresses: 
-        - SubnetId: !Ref SubnetA
-        - SubnetId: !Ref SubnetB
+        - SubnetId: !Ref ResolverSubnetA
+        - SubnetId: !Ref ResolverSubnetB
       SecurityGroupIds: 
         - !Ref OutboundResolverSecurityGroup
   InstanceRole:
