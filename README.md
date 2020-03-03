@@ -1,6 +1,8 @@
 # VPC Endpoints with EC2
 
-A quick work through using VPCs without internet connectivity.
+> Richard Green, March 2020
+
+A work through using VPCs without internet connectivity, and forwarding DNS requests.
 
 We aim to be able to connect to the EC2 instance using AWS Systems Manager's Session Manager service. It is unlikely this would be sufficent for a real service, and note that it is not possible to access (for instance) updates for the instance. While this example is minimal, it could be extended if we wanted to connect to other nearby services, AWS services via other AWS VPC endpoints and more remote services via AWS PrivateLink
 
@@ -36,8 +38,7 @@ bin/deploy.sh
 
 After deleting a VPC endpoint it can be a while before it is possible to create a new endpoint due to caching of DNS records, so if you delete this stack, you may not be able to recreate it again for a few minutes.
 
-
 ## References
 
-[How do I create VPC endpoints so that I can use Systems Manager to manage private EC2 instances without internet access?](https://aws.amazon.com/premiumsupport/knowledge-center/ec2-systems-manager-vpc-endpoints/)
-[Forwarding Outbound DNS Queries to Your Network](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-forwarding-outbound-queries.html)
+1. [How do I create VPC endpoints so that I can use Systems Manager to manage private EC2 instances without internet access?](https://aws.amazon.com/premiumsupport/knowledge-center/ec2-systems-manager-vpc-endpoints/)
+1. [Forwarding Outbound DNS Queries to Your Network](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-forwarding-outbound-queries.html)
