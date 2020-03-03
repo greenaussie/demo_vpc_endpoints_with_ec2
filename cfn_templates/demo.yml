@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Demo
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "192.168.0.0/24"
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+  VpcDhcpOptions:
+    Type: "AWS::EC2::DHCPOptions"
+    Properties:
+      DomainNameServers:
+        - AmazonProvidedDNS
+  VpcDHCPOptionsAssociation:
+    Type: "AWS::EC2::VPCDHCPOptionsAssociation"
+    Properties:
+      DhcpOptionsId: !Ref VpcDhcpOptions
+      VpcId: !Ref Vpc
+  VpcFlowLogs:
+    Type: "AWS::EC2::FlowLog"
+    Properties:
+      DeliverLogsPermissionArn: !GetAtt CloudWatchLogRole.Arn
+      LogGroupName: demo-vpc-flow-logs
+      ResourceId: !Ref Vpc
+      ResourceType: VPC
+      TrafficType: ALL
+  CloudWatchLogRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "vpc-flow-logs.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      ManagedPolicyArns: ["arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"]
+  CloudwatchLogGroupProd:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName: demo-vpc-flow-logs
+  Subnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: ap-southeast-2a
+      CidrBlock: 192.168.0.0/24
+      VpcId: !Ref Vpc
+  InterfaceVpcEndpointSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: VPC interface endpoint security group
+      SecurityGroupEgress:
+        - CidrIp: "0.0.0.0/0"
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp: 192.168.0.0/24
+          IpProtocol: "tcp"
+          FromPort: "443"
+          ToPort: "443"
+      VpcId: !Ref Vpc
+  Ec2ApiVpcEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PrivateDnsEnabled: "true"
+      SecurityGroupIds:
+        - !Ref InterfaceVpcEndpointSecurityGroup
+      ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2" ] ]
+      SubnetIds:
+        - !Ref Subnet
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc
+  Ec2MessagesVpcEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PrivateDnsEnabled: "true"
+      SecurityGroupIds:
+        - !Ref InterfaceVpcEndpointSecurityGroup
+      ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2messages" ] ]
+      SubnetIds:
+        - !Ref Subnet
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc    
+  SsmVpcEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PrivateDnsEnabled: "true"
+      SecurityGroupIds:
+        - !Ref InterfaceVpcEndpointSecurityGroup
+      ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssm" ] ]
+      SubnetIds:
+        - !Ref Subnet
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc
+  SsmMessagesVpcEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PrivateDnsEnabled: "true"
+      SecurityGroupIds:
+        - !Ref InterfaceVpcEndpointSecurityGroup
+      ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssmmessages" ] ]
+      SubnetIds:
+        - !Ref Subnet
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc    
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - Ref: InstanceRole
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      IamInstanceProfile: !Ref InstanceProfile
+      InstanceType: t3.nano
+      ImageId: ami-023c6e46cf5312347
