@@ -69,7 +69,7 @@ Resources:
     DeletionPolicy: Delete
     Properties:
       RetentionInDays: "1"
-  SubnetA:
+  Subnet:
     Type: "AWS::EC2::Subnet"
     Properties:
       AvailabilityZone: ap-southeast-2a
@@ -96,7 +96,7 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2" ] ]
       SubnetIds:
-        - !Ref SubnetA
+        - !Ref Subnet
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
   Ec2MessagesVpcEndpoint:
@@ -107,7 +107,7 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ec2messages" ] ]
       SubnetIds:
-        - !Ref SubnetA
+        - !Ref Subnet
       VpcEndpointType: Interface
       VpcId: !Ref Vpc    
   SsmVpcEndpoint:
@@ -118,7 +118,7 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssm" ] ]
       SubnetIds:
-        - !Ref SubnetA
+        - !Ref Subnet
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
   SsmMessagesVpcEndpoint:
@@ -129,9 +129,20 @@ Resources:
         - !Ref InterfaceVpcEndpointSecurityGroup
       ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".ssmmessages" ] ]
       SubnetIds:
-        - !Ref SubnetA
+        - !Ref Subnet
       VpcEndpointType: Interface
       VpcId: !Ref Vpc
+  CloudformationVpcEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PrivateDnsEnabled: "true"
+      SecurityGroupIds:
+        - !Ref InterfaceVpcEndpointSecurityGroup
+      ServiceName: !Join [ "", [ "com.amazonaws.", !Ref "AWS::Region", ".cloudformation" ] ]
+      SubnetIds:
+        - !Ref Subnet
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc    
   OutboundResolverSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -204,4 +215,12 @@ Resources:
       IamInstanceProfile: !Ref InstanceProfile
       InstanceType: t3.nano
       ImageId: ami-023c6e46cf5312347
-      SubnetId: !Ref SubnetA
+      SubnetId: !Ref Subnet
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo "something to do"
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource=Instance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT30M
